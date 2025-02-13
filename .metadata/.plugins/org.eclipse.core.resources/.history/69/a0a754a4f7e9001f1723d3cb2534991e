@@ -1,0 +1,204 @@
+package dao;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import javax.servlet.ServletContext;
+
+import dto.Review;
+import util.JDBConnect;
+
+public class ReviewDao extends JDBConnect {
+	public ReviewDao(ServletContext application) {
+		super(application);
+	}
+
+	// 리뷰 작성
+	public int insert(Review table) {
+		int res = 0;
+		try {
+			String sql = "insert into review(user_id, nickname, cafe_num, content, rating, date)"
+					+ " values(?,?,?,?,?,now())";
+			psmt = con.prepareStatement(sql);
+
+			psmt.setString(1, table.getUser_id());
+			psmt.setString(2, table.getNickname());
+			psmt.setInt(3, table.getCafe_num());
+			psmt.setString(4, table.getContent());
+			psmt.setFloat(5, table.getRating());
+
+			res = psmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+
+	// 리뷰 삭제
+	public int delete(int review_num) {
+		int res = 0;
+		try {
+			String sql = "delete from review where review_num=?";
+			psmt = con.prepareStatement(sql);
+			psmt.setInt(1, review_num);
+
+			res = psmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+
+	// 리뷰 수정
+	public int update(Review table) {
+		int res = 0;
+		try {
+			String sql = "update review set cafe_num=?, user_id=?, content=?, rating=?, date=now() where review_num=?";
+			psmt = con.prepareStatement(sql);
+			psmt.setInt(1, table.getCafe_num());
+			psmt.setString(2, table.getUser_id());
+			psmt.setString(3, table.getContent());
+			psmt.setFloat(4, table.getRating());
+			psmt.setInt(5, table.getReview_num());
+
+			res = psmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+
+	// 전체 리뷰 조회
+	public ArrayList<Review> selectList() {
+		ArrayList<Review> tableList = new ArrayList<>();
+		try {
+			String sql = "select * from review order by date desc";
+			psmt = con.prepareStatement(sql);
+			
+			rs = psmt.executeQuery();
+
+			while (rs.next()) {
+				Review table = new Review();
+
+				table.setReview_num(rs.getInt(1));
+				table.setUser_id(rs.getString(2));
+				table.setNickname(rs.getString(3));
+				table.setCafe_num(rs.getInt(4));
+				table.setContent(rs.getString(5));
+				table.setRating(rs.getFloat(6));
+				table.setDate(rs.getString(7));
+
+				tableList.add(table);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return tableList;
+	}
+
+	// 사용자id로 리뷰 조회
+	public ArrayList<Review> selectbyUser(String user_id) {
+		ArrayList<Review> tableList = new ArrayList<>();
+		try {
+			String sql = "select * from review where user_id=? order by date desc";
+			psmt = con.prepareStatement(sql);
+			psmt.setString(1, user_id);
+			rs = psmt.executeQuery();
+
+			while (rs.next()) {
+				Review table = new Review();
+
+				table.setReview_num(rs.getInt(1));
+				table.setUser_id(rs.getString(2));
+				table.setNickname(rs.getString(3));
+				table.setCafe_num(rs.getInt(4));
+				table.setContent(rs.getString(5));
+				table.setRating(rs.getFloat(6));
+				table.setDate(rs.getString(7));
+
+				tableList.add(table);	
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return tableList;
+	}
+	
+	// 카페별 리뷰 리스트
+//	public ArrayList<Review> selectbyCafe(int cafe_num) {
+//		ArrayList<Review> tableList = new ArrayList<>();
+//		try {
+//			String sql = "select * from review where cafe_num=? order by date desc";
+//			psmt = con.prepareStatement(sql);
+//			psmt.setInt(1, cafe_num);
+//			rs = psmt.executeQuery();
+//
+//			while (rs.next()) {
+//				Review table = new Review();
+//
+//				table.setReview_num(rs.getInt(1));
+//				table.setUser_id(rs.getString(2));
+//				table.setNickname(rs.getString(3));
+//				table.setCafe_num(rs.getInt(4));
+//				table.setContent(rs.getString(5));
+//				table.setRating(rs.getFloat(6));
+//				table.setDate(rs.getString(7));
+//
+//				tableList.add(table);	
+//			}
+//
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//		return tableList;
+//	}
+	
+	// 카페 num으로 리뷰 조회
+	   public ArrayList<Review> selectbyCafe(int cafe_num) {
+	      ArrayList<Review> tableList = new ArrayList<>();
+	      try {
+	         String sql = "select * from review where cafe_num=? order by date desc";
+	         psmt = con.prepareStatement(sql);
+	         psmt.setInt(1, cafe_num);
+	         rs = psmt.executeQuery();
+
+	         while (rs.next()) {
+	            Review table = new Review();
+
+	            table.setReview_num(rs.getInt(1));
+	            table.setUser_id(rs.getString(2));
+	            table.setNickname(rs.getString(3));
+	            table.setCafe_num(rs.getInt(4));
+	            table.setContent(rs.getString(5));
+	            table.setRating(rs.getFloat(6));
+	            table.setDate(rs.getString(7));
+
+	            tableList.add(table);   
+	         }
+
+	      } catch (SQLException e) {
+	         e.printStackTrace();
+	      }
+	      return tableList;
+	   }
+	
+	// 카페별 리뷰 수 조회
+	public int selectCount(int cafe_num) {
+		int res = 0;
+		try {
+			String sql = "select count(review_num) from review where cafe_num=?";
+			psmt = con.prepareStatement(sql);
+			psmt.setInt(1, cafe_num);
+			rs = psmt.executeQuery();
+			if (rs.next()) {
+				res = rs.getInt(1);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return res;
+	}
+}
